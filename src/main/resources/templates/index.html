@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Demo AI</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .form-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .scrollable-table {
+            overflow-y: auto;
+            flex-grow: 1;
+            border-top: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead tr {
+            position: sticky;
+            top: 0;
+            background-color: #007BFF;
+            color: white;
+            z-index: 1;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        textarea {
+            width: 100%;
+            height: 60px;
+        }
+        input, select, button {
+            padding: 8px;
+            margin: 5px 0;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Demo AI (Dummy UI)</h2>
+
+    <!-- ✅ Add Prompt Form -->
+    <form class="form-inline" th:action="@{/addPrompt}" method="post">
+        <input name="promptName" placeholder="Prompt Name" required>
+        <textarea name="userPrompt" placeholder="User Prompt"></textarea>
+        <button type="submit">Add Prompt</button>
+    </form>
+
+    <!-- ✅ Prompt Table -->
+    <div class="scrollable-table">
+        <table>
+            <thead>
+                <tr><th>Prompt Name</th><th>User Prompt</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="prompt : ${prompts}">
+                    <td th:text="${prompt.promptName}"></td>
+                    <td>
+                        <form th:action="@{/updatePrompt}" method="post">
+                            <input type="hidden" th:name="id" th:value="${prompt.id}" />
+                            <textarea th:name="userPrompt" th:text="${prompt.userPrompt}"></textarea>
+                    </td>
+                    <td>
+                            <button type="submit">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ✅ Image QA Section -->
+    <div style="margin-top: 20px">
+        <form th:action="@{/predictImage}" method="post" enctype="multipart/form-data">
+            <label>Select Ask Question Method:
+                <select>
+                    <option>Ask Question by Excel</option>
+                    <option>Ask Question by Content</option>
+                </select>
+            </label>
+
+            <h3>Ask Question by Content</h3>
+            <label>Select Prompt Name:
+                <select id="promptDropdown" name="promptText" onchange="fillPromptFromDropdown()">
+                    <option value="" disabled selected>Select a prompt</option>
+                    <option th:each="prompt : ${prompts}" th:text="${prompt.promptName}" th:value="${prompt.userPrompt}"></option>
+                </select>
+            </label>
+
+            <input id="userPromptField" name="userPrompt" placeholder="User Prompt">
+            <input type="file" name="imageFile" accept="image/*" required>
+            <button type="submit">Submit</button>
+        </form>
+
+        <!-- ✅ Show Prediction -->
+        <div th:if="${predictionResult}">
+            <h4>Prediction:</h4>
+            <p th:text="${predictionResult}"></p>
+        </div>
+
+        <script>
+            function fillPromptFromDropdown() {
+                var dropdown = document.getElementById("promptDropdown");
+                var selectedValue = dropdown.value;
+                document.getElementById("userPromptField").value = selectedValue;
+            }
+        </script>
+    </div>
+</div>
+</body>
+</html>
